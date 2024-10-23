@@ -1,0 +1,402 @@
+{
+    "Type": 1,
+    "Children": [
+        {
+            "Type": 2,
+            "Children": [
+                {
+                    "Type": 22,
+                    "Children": null,
+                    "Name": "FOO"
+                },
+                {
+                    "Type": 21,
+                    "Children": null,
+                    "Name": "1"
+                }
+            ],
+            "Name": "#define"
+        },
+        {
+            "Type": 8,
+            "Children": [
+                {
+                    "Type": 22,
+                    "Children": null,
+                    "Name": "int"
+                },
+                {
+                    "Type": 13,
+                    "Children": null,
+                    "Name": "Parameters"
+                },
+                {
+                    "Type": 3,
+                    "Children": [
+                        {
+                            "Type": 7,
+                            "Children": [
+                                {
+                                    "Type": 15,
+                                    "Children": [
+                                        {
+                                            "Type": 15,
+                                            "Children": [
+                                                {
+                                                    "Type": 21,
+                                                    "Children": null,
+                                                    "Name": "1"
+                                                },
+                                                {
+                                                    "Type": 22,
+                                                    "Children": null,
+                                                    "Name": "FOO"
+                                                }
+                                            ],
+                                            "Name": "+"
+                                        },
+                                        {
+                                            "Type": 21,
+                                            "Children": null,
+                                            "Name": "2"
+                                        }
+                                    ],
+                                    "Name": "*"
+                                }
+                            ],
+                            "Name": "return"
+                        }
+                    ],
+                    "Name": "Block"
+                }
+            ],
+            "Name": "bar"
+        },
+        {
+            "Type": 8,
+            "Children": [
+                {
+                    "Type": 22,
+                    "Children": null,
+                    "Name": "int"
+                },
+                {
+                    "Type": 13,
+                    "Children": [
+                        {
+                            "Type": 9,
+                            "Children": [
+                                {
+                                    "Type": 22,
+                                    "Children": null,
+                                    "Name": "int"
+                                }
+                            ],
+                            "Name": "a"
+                        },
+                        {
+                            "Type": 9,
+                            "Children": [
+                                {
+                                    "Type": 22,
+                                    "Children": null,
+                                    "Name": "int"
+                                }
+                            ],
+                            "Name": "b"
+                        }
+                    ],
+                    "Name": "Parameters"
+                },
+                {
+                    "Type": 3,
+                    "Children": [
+                        {
+                            "Type": 7,
+                            "Children": [
+                                {
+                                    "Type": 15,
+                                    "Children": [
+                                        {
+                                            "Type": 22,
+                                            "Children": null,
+                                            "Name": "a"
+                                        },
+                                        {
+                                            "Type": 22,
+                                            "Children": null,
+                                            "Name": "b"
+                                        }
+                                    ],
+                                    "Name": "+"
+                                }
+                            ],
+                            "Name": "return"
+                        }
+                    ],
+                    "Name": "Block"
+                }
+            ],
+            "Name": "baz"
+        },
+        {
+            "Type": 8,
+            "Children": [
+                {
+                    "Type": 22,
+                    "Children": null,
+                    "Name": "int"
+                },
+                {
+                    "Type": 13,
+                    "Children": null,
+                    "Name": "Parameters"
+                },
+                {
+                    "Type": 3,
+                    "Children": [
+                        {
+                            "Type": 7,
+                            "Children": [
+                                {
+                                    "Type": 15,
+                                    "Children": [
+                                        {
+                                            "Type": 15,
+                                            "Children": [
+                                                {
+                                                    "Type": 21,
+                                                    "Children": null,
+                                                    "Name": "1"
+                                                },
+                                                {
+                                                    "Type": 15,
+                                                    "Children": [
+                                                        {
+                                                            "Type": 15,
+                                                            "Children": [
+                                                                {
+                                                                    "Type": 21,
+                                                                    "Children": null,
+                                                                    "Name": "3"
+                                                                },
+                                                                {
+                                                                    "Type": 21,
+                                                                    "Children": null,
+                                                                    "Name": "4"
+                                                                }
+                                                            ],
+                                                            "Name": "*"
+                                                        },
+                                                        {
+                                                            "Type": 15,
+                                                            "Children": [
+                                                                {
+                                                                    "Type": 15,
+                                                                    "Children": [
+                                                                        {
+                                                                            "Type": 15,
+                                                                            "Children": [
+                                                                                {
+                                                                                    "Type": 21,
+                                                                                    "Children": null,
+                                                                                    "Name": "8"
+                                                                                },
+                                                                                {
+                                                                                    "Type": 21,
+                                                                                    "Children": null,
+                                                                                    "Name": "3"
+                                                                                }
+                                                                            ],
+                                                                            "Name": "*"
+                                                                        },
+                                                                        {
+                                                                            "Type": 21,
+                                                                            "Children": null,
+                                                                            "Name": "2"
+                                                                        }
+                                                                    ],
+                                                                    "Name": "/"
+                                                                },
+                                                                {
+                                                                    "Type": 21,
+                                                                    "Children": null,
+                                                                    "Name": "1"
+                                                                }
+                                                            ],
+                                                            "Name": "+"
+                                                        }
+                                                    ],
+                                                    "Name": "*"
+                                                }
+                                            ],
+                                            "Name": "+"
+                                        },
+                                        {
+                                            "Type": 21,
+                                            "Children": null,
+                                            "Name": "2"
+                                        }
+                                    ],
+                                    "Name": "-"
+                                }
+                            ],
+                            "Name": "return"
+                        }
+                    ],
+                    "Name": "Block"
+                }
+            ],
+            "Name": "biz"
+        },
+        {
+            "Type": 8,
+            "Children": [
+                {
+                    "Type": 22,
+                    "Children": null,
+                    "Name": "int"
+                },
+                {
+                    "Type": 13,
+                    "Children": null,
+                    "Name": "Parameters"
+                },
+                {
+                    "Type": 3,
+                    "Children": [
+                        {
+                            "Type": 23,
+                            "Children": [
+                                {
+                                    "Type": 23,
+                                    "Children": null,
+                                    "Name": "biz"
+                                }
+                            ],
+                            "Name": "printf"
+                        },
+                        {
+                            "Type": 7,
+                            "Children": [
+                                {
+                                    "Type": 21,
+                                    "Children": null,
+                                    "Name": "0"
+                                }
+                            ],
+                            "Name": "return"
+                        }
+                    ],
+                    "Name": "Block"
+                }
+            ],
+            "Name": "bap"
+        },
+        {
+            "Type": 8,
+            "Children": [
+                {
+                    "Type": 22,
+                    "Children": null,
+                    "Name": "int"
+                },
+                {
+                    "Type": 13,
+                    "Children": null,
+                    "Name": "Parameters"
+                },
+                {
+                    "Type": 3,
+                    "Children": [
+                        {
+                            "Type": 9,
+                            "Children": [
+                                {
+                                    "Type": 21,
+                                    "Children": null,
+                                    "Name": "5"
+                                }
+                            ],
+                            "Name": "a"
+                        },
+                        {
+                            "Type": 23,
+                            "Children": [
+                                {
+                                    "Type": 15,
+                                    "Children": [
+                                        {
+                                            "Type": 15,
+                                            "Children": [
+                                                {
+                                                    "Type": 22,
+                                                    "Children": null,
+                                                    "Name": "FOO"
+                                                },
+                                                {
+                                                    "Type": 21,
+                                                    "Children": null,
+                                                    "Name": "1"
+                                                }
+                                            ],
+                                            "Name": "+"
+                                        },
+                                        {
+                                            "Type": 15,
+                                            "Children": [
+                                                {
+                                                    "Type": 23,
+                                                    "Children": null,
+                                                    "Name": "bar"
+                                                },
+                                                {
+                                                    "Type": 23,
+                                                    "Children": [
+                                                        {
+                                                            "Type": 22,
+                                                            "Children": null,
+                                                            "Name": "a"
+                                                        },
+                                                        {
+                                                            "Type": 21,
+                                                            "Children": null,
+                                                            "Name": "4"
+                                                        }
+                                                    ],
+                                                    "Name": "baz"
+                                                }
+                                            ],
+                                            "Name": "*"
+                                        }
+                                    ],
+                                    "Name": "+"
+                                }
+                            ],
+                            "Name": "printf"
+                        },
+                        {
+                            "Type": 23,
+                            "Children": null,
+                            "Name": "bap"
+                        },
+                        {
+                            "Type": 7,
+                            "Children": [
+                                {
+                                    "Type": 21,
+                                    "Children": null,
+                                    "Name": "0"
+                                }
+                            ],
+                            "Name": "return"
+                        }
+                    ],
+                    "Name": "Block"
+                }
+            ],
+            "Name": "main"
+        }
+    ],
+    "Name": "Program"
+}

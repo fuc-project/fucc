@@ -1,0 +1,126 @@
+{
+    "Type": 1,
+    "Children": [
+        {
+            "Type": 2,
+            "Children": [
+                {
+                    "Type": 22,
+                    "Children": null,
+                    "Name": "MAX"
+                },
+                {
+                    "Type": 21,
+                    "Children": null,
+                    "Name": "8192"
+                }
+            ],
+            "Name": "#define"
+        },
+        {
+            "Type": 8,
+            "Children": [
+                {
+                    "Type": 22,
+                    "Children": null,
+                    "Name": "int"
+                },
+                {
+                    "Type": 13,
+                    "Children": null,
+                    "Name": "Parameters"
+                },
+                {
+                    "Type": 3,
+                    "Children": [
+                        {
+                            "Type": 9,
+                            "Children": [
+                                {
+                                    "Type": 22,
+                                    "Children": null,
+                                    "Name": "int"
+                                },
+                                {
+                                    "Type": 21,
+                                    "Children": null,
+                                    "Name": "0"
+                                }
+                            ],
+                            "Name": "x"
+                        },
+                        {
+                            "Type": 14,
+                            "Children": [
+                                {
+                                    "Type": 15,
+                                    "Children": [
+                                        {
+                                            "Type": 22,
+                                            "Children": null,
+                                            "Name": "x"
+                                        },
+                                        {
+                                            "Type": 22,
+                                            "Children": null,
+                                            "Name": "MAX"
+                                        }
+                                    ],
+                                    "Name": "\u003c"
+                                },
+                                {
+                                    "Type": 3,
+                                    "Children": [
+                                        {
+                                            "Type": 6,
+                                            "Children": [
+                                                {
+                                                    "Type": 22,
+                                                    "Children": null,
+                                                    "Name": "+="
+                                                },
+                                                {
+                                                    "Type": 21,
+                                                    "Children": null,
+                                                    "Name": "1"
+                                                }
+                                            ],
+                                            "Name": "x"
+                                        },
+                                        {
+                                            "Type": 23,
+                                            "Children": [
+                                                {
+                                                    "Type": 22,
+                                                    "Children": null,
+                                                    "Name": "x"
+                                                }
+                                            ],
+                                            "Name": "printf"
+                                        }
+                                    ],
+                                    "Name": "Block"
+                                }
+                            ],
+                            "Name": "while"
+                        },
+                        {
+                            "Type": 7,
+                            "Children": [
+                                {
+                                    "Type": 21,
+                                    "Children": null,
+                                    "Name": "0"
+                                }
+                            ],
+                            "Name": "return"
+                        }
+                    ],
+                    "Name": "Block"
+                }
+            ],
+            "Name": "main"
+        }
+    ],
+    "Name": "Program"
+}

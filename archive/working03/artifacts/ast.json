@@ -1,0 +1,173 @@
+{
+    "Type": 1,
+    "Children": [
+        {
+            "Type": 8,
+            "Children": [
+                {
+                    "Type": 22,
+                    "Children": null,
+                    "Name": "int"
+                },
+                {
+                    "Type": 13,
+                    "Children": [
+                        {
+                            "Type": 9,
+                            "Children": [
+                                {
+                                    "Type": 22,
+                                    "Children": null,
+                                    "Name": "int"
+                                }
+                            ],
+                            "Name": "x"
+                        }
+                    ],
+                    "Name": "Parameters"
+                },
+                {
+                    "Type": 3,
+                    "Children": [
+                        {
+                            "Type": 4,
+                            "Children": [
+                                {
+                                    "Type": 15,
+                                    "Children": [
+                                        {
+                                            "Type": 22,
+                                            "Children": null,
+                                            "Name": "x"
+                                        },
+                                        {
+                                            "Type": 21,
+                                            "Children": null,
+                                            "Name": "1024"
+                                        }
+                                    ],
+                                    "Name": "\u003e"
+                                },
+                                {
+                                    "Type": 3,
+                                    "Children": [
+                                        {
+                                            "Type": 7,
+                                            "Children": [
+                                                {
+                                                    "Type": 22,
+                                                    "Children": null,
+                                                    "Name": "x"
+                                                }
+                                            ],
+                                            "Name": "return"
+                                        }
+                                    ],
+                                    "Name": "Block"
+                                }
+                            ],
+                            "Name": "if"
+                        },
+                        {
+                            "Type": 6,
+                            "Children": [
+                                {
+                                    "Type": 22,
+                                    "Children": null,
+                                    "Name": "*="
+                                },
+                                {
+                                    "Type": 21,
+                                    "Children": null,
+                                    "Name": "2"
+                                }
+                            ],
+                            "Name": "x"
+                        },
+                        {
+                            "Type": 23,
+                            "Children": [
+                                {
+                                    "Type": 22,
+                                    "Children": null,
+                                    "Name": "x"
+                                }
+                            ],
+                            "Name": "printf"
+                        },
+                        {
+                            "Type": 7,
+                            "Children": [
+                                {
+                                    "Type": 23,
+                                    "Children": [
+                                        {
+                                            "Type": 22,
+                                            "Children": null,
+                                            "Name": "x"
+                                        }
+                                    ],
+                                    "Name": "recursiveFunction"
+                                }
+                            ],
+                            "Name": "return"
+                        }
+                    ],
+                    "Name": "Block"
+                }
+            ],
+            "Name": "recursiveFunction"
+        },
+        {
+            "Type": 8,
+            "Children": [
+                {
+                    "Type": 22,
+                    "Children": null,
+                    "Name": "int"
+                },
+                {
+                    "Type": 13,
+                    "Children": null,
+                    "Name": "Parameters"
+                },
+                {
+                    "Type": 3,
+                    "Children": [
+                        {
+                            "Type": 23,
+                            "Children": [
+                                {
+                                    "Type": 23,
+                                    "Children": [
+                                        {
+                                            "Type": 21,
+                                            "Children": null,
+                                            "Name": "2"
+                                        }
+                                    ],
+                                    "Name": "recursiveFunction"
+                                }
+                            ],
+                            "Name": "printf"
+                        },
+                        {
+                            "Type": 7,
+                            "Children": [
+                                {
+                                    "Type": 21,
+                                    "Children": null,
+                                    "Name": "0"
+                                }
+                            ],
+                            "Name": "return"
+                        }
+                    ],
+                    "Name": "Block"
+                }
+            ],
+            "Name": "main"
+        }
+    ],
+    "Name": "Program"
+}

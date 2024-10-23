@@ -1,0 +1,72 @@
+Program(Program) {
+    FunctionDeclaration(test) {
+        Identifier(int)
+        Parameters(Parameters) {
+            VariableDeclaration(x) {
+                Identifier(int)
+            }
+        }
+        Block(Block) {
+            Statement(if) {
+                BinaryExpression(==) {
+                    Identifier(x)
+                    Literal(5)
+                }
+                Block(Block) {
+                    FunctionCall(printf) {
+                        Literal(5)
+                    }
+                }
+                Statement(if) {
+                    BinaryExpression(==) {
+                        BinaryExpression(%) {
+                            Identifier(x)
+                            Literal(2)
+                        }
+                        Literal(0)
+                    }
+                    Block(Block) {
+                        FunctionCall(printf) {
+                            Literal(2)
+                        }
+                    }
+                    Block(Block) {
+                        FunctionCall(printf) {
+                            Literal(1)
+                        }
+                    }
+                }
+            }
+            ReturnStatement(return) {
+                Literal(0)
+            }
+        }
+    }
+    FunctionDeclaration(main) {
+        Identifier(int)
+        Parameters(Parameters)
+        Block(Block) {
+            FunctionCall(test) {
+                Literal(5)
+            }
+            FunctionCall(test) {
+                Literal(4)
+            }
+            FunctionCall(test) {
+                Literal(3)
+            }
+            FunctionCall(test) {
+                Literal(2)
+            }
+            FunctionCall(test) {
+                Literal(1)
+            }
+            FunctionCall(test) {
+                Literal(0)
+            }
+            ReturnStatement(return) {
+                Literal(0)
+            }
+        }
+    }
+}

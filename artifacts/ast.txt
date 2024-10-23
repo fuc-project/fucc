@@ -1,0 +1,34 @@
+Program(Program) {
+    PreprocessorDirective(#define) {
+        Identifier(MAX)
+        Literal(8192)
+    }
+    FunctionDeclaration(main) {
+        Identifier(int)
+        Parameters(Parameters)
+        Block(Block) {
+            VariableDeclaration(x) {
+                Identifier(int)
+                Literal(0)
+            }
+            WhileStatement(while) {
+                BinaryExpression(<) {
+                    Identifier(x)
+                    Identifier(MAX)
+                }
+                Block(Block) {
+                    Assignment(x) {
+                        Identifier(+=)
+                        Literal(1)
+                    }
+                    FunctionCall(printf) {
+                        Identifier(x)
+                    }
+                }
+            }
+            ReturnStatement(return) {
+                Literal(0)
+            }
+        }
+    }
+}

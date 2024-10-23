@@ -1,0 +1,49 @@
+Program(Program) {
+    FunctionDeclaration(recursiveFunction) {
+        Identifier(int)
+        Parameters(Parameters) {
+            VariableDeclaration(x) {
+                Identifier(int)
+            }
+        }
+        Block(Block) {
+            Statement(if) {
+                BinaryExpression(>) {
+                    Identifier(x)
+                    Literal(1024)
+                }
+                Block(Block) {
+                    ReturnStatement(return) {
+                        Identifier(x)
+                    }
+                }
+            }
+            Assignment(x) {
+                Identifier(*=)
+                Literal(2)
+            }
+            FunctionCall(printf) {
+                Identifier(x)
+            }
+            ReturnStatement(return) {
+                FunctionCall(recursiveFunction) {
+                    Identifier(x)
+                }
+            }
+        }
+    }
+    FunctionDeclaration(main) {
+        Identifier(int)
+        Parameters(Parameters)
+        Block(Block) {
+            FunctionCall(printf) {
+                FunctionCall(recursiveFunction) {
+                    Literal(2)
+                }
+            }
+            ReturnStatement(return) {
+                Literal(0)
+            }
+        }
+    }
+}
