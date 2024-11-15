@@ -1,7 +1,7 @@
-#define BULLSHIT 1024
+#define CONSTANT 1024
 
 int fucFunction(int x) {
-    if (x > BULLSHIT * BULLSHIT) {
+    if (x > CONSTANT * CONSTANT) {
         return x;
     }
 
@@ -14,7 +14,7 @@ int fucFunction(int x) {
 int main() {
     int x = 2;
     
-    while (x <= BULLSHIT) {
+    while (x <= CONSTANT) {
         x *= 4;
         printf(x);
     }

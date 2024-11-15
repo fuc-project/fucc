@@ -17,6 +17,18 @@ Program(Program) {
                     Identifier(MAX)
                 }
                 Block(Block) {
+                    Statement(if) {
+                        BinaryExpression(!=) {
+                            BinaryExpression(%) {
+                                Identifier(x)
+                                Literal(100)
+                            }
+                            Literal(0)
+                        }
+                        Block(Block) {
+                            Statement(continue)
+                        }
+                    }
                     Assignment(x) {
                         Identifier(+=)
                         Literal(1)

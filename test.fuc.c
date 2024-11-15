@@ -4,9 +4,9 @@ int main() {
     int x = 0;
 
     while (x < MAX) {
-        // if (x % 100 != 0) {
-        //     continue;
-        // }
+        if (x % 100 != 0) {
+            continue;
+        }
 
         x += 1;
         printf(x);

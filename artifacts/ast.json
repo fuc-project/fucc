@@ -72,6 +72,50 @@
                                     "Type": 3,
                                     "Children": [
                                         {
+                                            "Type": 4,
+                                            "Children": [
+                                                {
+                                                    "Type": 15,
+                                                    "Children": [
+                                                        {
+                                                            "Type": 15,
+                                                            "Children": [
+                                                                {
+                                                                    "Type": 22,
+                                                                    "Children": null,
+                                                                    "Name": "x"
+                                                                },
+                                                                {
+                                                                    "Type": 21,
+                                                                    "Children": null,
+                                                                    "Name": "100"
+                                                                }
+                                                            ],
+                                                            "Name": "%"
+                                                        },
+                                                        {
+                                                            "Type": 21,
+                                                            "Children": null,
+                                                            "Name": "0"
+                                                        }
+                                                    ],
+                                                    "Name": "!="
+                                                },
+                                                {
+                                                    "Type": 3,
+                                                    "Children": [
+                                                        {
+                                                            "Type": 4,
+                                                            "Children": null,
+                                                            "Name": "continue"
+                                                        }
+                                                    ],
+                                                    "Name": "Block"
+                                                }
+                                            ],
+                                            "Name": "if"
+                                        },
+                                        {
                                             "Type": 6,
                                             "Children": [
                                                 {

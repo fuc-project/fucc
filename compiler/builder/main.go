@@ -105,27 +105,30 @@ type targetType int
 
 const (
 	Windowsx86 targetType = iota
-	Windowsx64
+	Windows
 	Linuxx86
-	Linuxx64
+	Linux
 	WebAssembly
 )
 
-func (b *Builder) SetTarget(target targetType) {
+func (b *Builder) SetTarget(target targetType) *Builder {
 	switch target {
 	case Windowsx86:
 		b.module.TargetTriple = "i686-pc-windows-msvc"
-	case Windowsx64:
+	case Windows:
 		b.module.TargetTriple = "x86_64-pc-windows-msvc"
 	case Linuxx86:
 		b.module.TargetTriple = "i686-pc-linux-gnu"
-	case Linuxx64:
+	case Linux:
 		b.module.TargetTriple = "x86_64-pc-linux-gnu"
 	case WebAssembly:
-		b.module.TargetTriple = "wasm32-unknown-unknown"
+		// b.module.TargetTriple = "wasm32-wasi"
+		panic("WebAssembly target not supported yet")
 	default:
 		panic(fmt.Sprintf("Unsupported target: %d", target))
 	}
+
+	return b
 }
 
 func (b *Builder) Build() *ir.Module {
@@ -262,11 +265,6 @@ func (b *Builder) generateBlock(block *ir.Block, node *ast.ASTNode) {
 		case ast.FunctionCall:
 			b.generateFunctionCall(child)
 		case ast.Statement:
-			// if child.Name == "if" {
-			// 	b.generateConditional(child)
-			// } else {
-			// 	panic(fmt.Sprintf("Unsupported statement type: %s", child.Name))
-			// }
 			switch child.Name {
 			case "if":
 				b.generateConditional(child)
@@ -479,4 +477,32 @@ func getTypeFromName(name string) types.Type {
 	}
 }
 
-func (b *Builder) generateBreakContinue(node *ast.ASTNode, isContinue bool) {}
+func (b *Builder) generateBreakContinue(node *ast.ASTNode, isContinue bool) {
+	if len(node.Children) > 0 {
+		panic("Break/continue statements do not take any arguments")
+	}
+
+	var targetBlock *ir.Block
+	for i := len(b.function.Blocks) - 1; i >= 0; i-- {
+		block := b.function.Blocks[i]
+		if block == b.block {
+			if isContinue {
+				targetBlock = block
+			} else {
+				targetBlock = b.function.NewBlock("")
+			}
+			break
+		}
+	}
+
+	if targetBlock == nil {
+		panic("Break/continue statement outside of a loop")
+	}
+
+	if isContinue {
+		b.block.NewBr(targetBlock)
+	} else {
+		b.block.NewBr(targetBlock)
+		b.block = targetBlock
+	}
+}
