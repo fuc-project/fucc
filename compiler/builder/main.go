@@ -12,118 +12,46 @@ import (
 	"github.com/llir/llvm/ir/value"
 )
 
-// AST Text reference
-/*Program(Program) {
-    FunctionDeclaration(recursiveFunction) {
-        Identifier(int)
-        Parameters(Parameters) {
-            VariableDeclaration(x) {
-                Identifier(int)
-            }
-        }
-        Block(Block) {
-            Statement(if) {
-                BinaryExpression(>) {
-                    Identifier(x)
-                    Literal(1024)
-                }
-                Block(Block) {
-                    ReturnStatement(return) {
-                        Identifier(x)
-                    }
-                }
-            }
-            Statement(if) {
-                BinaryExpression(==) {
-                    BinaryExpression(%) {
-                        Identifier(x)
-                        Literal(2)
-                    }
-                    Literal(0)
-                }
-                Block(Block) {
-                    Assignment(x) {
-                        Identifier(*=)
-                        BinaryExpression(*) {
-                            BinaryExpression(%) {
-                                Identifier(x)
-                                Literal(6)
-                            }
-                            Literal(2)
-                        }
-                    }
-                }
-            }
-            ReturnStatement(return) {
-                FunctionCall(recursiveFunction) {
-                    BinaryExpression(-) {
-                        Identifier(x)
-                        Literal(1)
-                    }
-                }
-            }
-        }
-    }
-    FunctionDeclaration(main) {
-        Identifier(int)
-        Parameters(Parameters)
-        Block(Block) {
-            VariableDeclaration(x) {
-                Literal(1024)
-            }
-            FunctionCall(printf) {
-                FunctionCall(recursiveFunction) {
-                    Identifier(x)
-                }
-            }
-            ReturnStatement(return) {
-                Literal(0)
-            }
-        }
-    }
-}*/
+type LoopTrace struct {
+	condition, body, end *ir.Block
+}
 
 type Builder struct {
-	ast      *ast.ASTNode
-	module   *ir.Module
-	function *ir.Func
-	block    *ir.Block
-	locals   map[string]value.Value
-	globals  map[string]constant.Constant
+	ast             *ast.ASTNode
+	module          *ir.Module
+	functions       []*ir.Func
+	currentFunction *ir.Func
+	blocks          []*ir.Block
+	currentBlock    *ir.Block
+	locals          map[string]value.Value
+	globals         map[string]constant.Constant
+	loops           []*LoopTrace
 }
 
 func NewBuilder(ast *ast.ASTNode) *Builder {
 	return &Builder{
-		ast:     ast,
-		module:  ir.NewModule(),
-		locals:  make(map[string]value.Value),
-		globals: make(map[string]constant.Constant),
+		ast:       ast,
+		module:    ir.NewModule(),
+		locals:    make(map[string]value.Value),
+		globals:   make(map[string]constant.Constant),
+		loops:     make([]*LoopTrace, 0),
+		functions: make([]*ir.Func, 0),
 	}
 }
 
 type targetType int
 
 const (
-	Windowsx86 targetType = iota
-	Windows
-	Linuxx86
+	Windows targetType = iota
 	Linux
-	WebAssembly
 )
 
 func (b *Builder) SetTarget(target targetType) *Builder {
 	switch target {
-	case Windowsx86:
-		b.module.TargetTriple = "i686-pc-windows-msvc"
 	case Windows:
 		b.module.TargetTriple = "x86_64-pc-windows-msvc"
-	case Linuxx86:
-		b.module.TargetTriple = "i686-pc-linux-gnu"
 	case Linux:
 		b.module.TargetTriple = "x86_64-pc-linux-gnu"
-	case WebAssembly:
-		// b.module.TargetTriple = "wasm32-wasi"
-		panic("WebAssembly target not supported yet")
 	default:
 		panic(fmt.Sprintf("Unsupported target: %d", target))
 	}
@@ -132,12 +60,7 @@ func (b *Builder) SetTarget(target targetType) *Builder {
 }
 
 func (b *Builder) Build() *ir.Module {
-	b.generateProgram(b.ast)
-	return b.module
-}
-
-func (b *Builder) generateProgram(node *ast.ASTNode) {
-	for _, child := range node.Children {
+	for _, child := range b.ast.Children {
 		switch child.Type {
 		case ast.PreprocessorDirective:
 			b.generatePreprocessorDirective(child)
@@ -145,6 +68,8 @@ func (b *Builder) generateProgram(node *ast.ASTNode) {
 			b.generateFunction(child)
 		}
 	}
+
+	return b.module
 }
 
 func (b *Builder) generatePreprocessorDirective(node *ast.ASTNode) {
@@ -199,181 +124,29 @@ func (b *Builder) generateFunction(node *ast.ASTNode) {
 	// Create function
 	fn := b.module.NewFunc(name, funcType.RetType, params...)
 
-	// Set parameter names and add them to locals
-	b.locals = make(map[string]value.Value) // Clear locals for the new function
+	// Add function to builder
+	b.functions = append(b.functions, fn)
+	b.currentFunction = fn
+
+	// Locals
+	b.locals = make(map[string]value.Value)
 	for i, param := range fn.Params {
 		param.SetName(paramNames[i])
 		b.locals[paramNames[i]] = param
 	}
 
-	b.function = fn
+	entry := fn.NewBlock("entry")
+	b.blocks = append(b.blocks, entry)
+	b.currentBlock = entry
 
-	// Create entry block
-	entry := fn.NewBlock("")
 	b.generateBlock(entry, node.Children[2])
 
 	// Add return statement if not present
-	if entry.Term == nil {
-		entry.NewRet(constant.NewInt(types.I32, 0))
-	}
-}
-
-func (b *Builder) generateFunctionCall(node *ast.ASTNode) value.Value {
-	fnName := node.Name
-	var fn *ir.Func
-
-	// Find the function in the module
-	for _, f := range b.module.Funcs {
-		if f.Name() == fnName {
-			fn = f
-			break
-		}
+	if b.currentBlock.Term == nil {
+		b.currentBlock.NewRet(nil)
 	}
 
-	if fn == nil {
-		if fnName == "printf" {
-			// Create printf function
-			fn = b.module.NewFunc("printf", types.I32, ir.NewParam("format", types.NewPointer(types.I8)))
-			fn.Sig.Variadic = true
-		} else {
-			// Function not found
-			panic(fmt.Sprintf("Function not found: %s", fnName))
-		}
-	}
-
-	var args []value.Value
-	if fnName == "printf" {
-		// Add format string for printf
-		formatStr := b.module.NewGlobalDef("", constant.NewCharArray([]byte("%d\n\x00")))
-		args = append(args, formatStr)
-	}
-	for _, arg := range node.Children {
-		args = append(args, b.generateExpression(arg))
-	}
-
-	return b.block.NewCall(fn, args...)
-}
-
-func (b *Builder) generateBlock(block *ir.Block, node *ast.ASTNode) {
-	b.block = block
-	for _, child := range node.Children {
-		switch child.Type {
-		case ast.ReturnStatement:
-			b.generateReturn(child)
-		case ast.VariableDeclaration:
-			b.generateVariableDeclaration(child)
-		case ast.FunctionCall:
-			b.generateFunctionCall(child)
-		case ast.Statement:
-			switch child.Name {
-			case "if":
-				b.generateConditional(child)
-			case "continue":
-				b.generateBreakContinue(child, true)
-			case "break":
-				b.generateBreakContinue(child, false)
-			default:
-				panic(fmt.Sprintf("Unsupported statement type: %s", child.Name))
-			}
-		case ast.Assignment:
-			b.generateAssignment(child)
-		case ast.WhileStatement:
-			b.generateWhileStatement(child)
-		default:
-			panic(fmt.Sprintf("Unsupported block type: %d", child.Type))
-		}
-	}
-}
-
-func (b *Builder) generateReturn(node *ast.ASTNode) {
-	if len(node.Children) == 0 {
-		b.block.NewRet(nil)
-	} else {
-		value := b.generateExpression(node.Children[0])
-		b.block.NewRet(value)
-	}
-}
-
-func (b *Builder) generateVariableDeclaration(node *ast.ASTNode) {
-	varName := node.Name
-	varType := getTypeFromName(node.Children[0].Name)
-	alloca := b.block.NewAlloca(varType)
-	alloca.SetName(varName)
-	b.locals[varName] = alloca
-
-	if len(node.Children) > 1 {
-		value := b.generateExpression(node.Children[1])
-		b.block.NewStore(value, alloca)
-	}
-}
-
-func (b *Builder) generateConditional(node *ast.ASTNode) {
-	condition := b.generateExpression(node.Children[0])
-	thenBlock := b.function.NewBlock("")
-	endBlock := b.function.NewBlock("")
-	var elseBlock *ir.Block
-
-	if len(node.Children) > 2 {
-		elseBlock = b.function.NewBlock("")
-		b.block.NewCondBr(condition, thenBlock, elseBlock)
-	} else {
-		b.block.NewCondBr(condition, thenBlock, endBlock)
-	}
-
-	b.generateBlock(thenBlock, node.Children[1])
-	if thenBlock.Term == nil {
-		thenBlock.NewBr(endBlock)
-	}
-
-	if elseBlock != nil {
-		b.generateBlock(elseBlock, node.Children[2])
-		if elseBlock.Term == nil {
-			elseBlock.NewBr(endBlock)
-		}
-	}
-
-	b.block = endBlock
-}
-
-func (b *Builder) generateAssignment(node *ast.ASTNode) {
-	varName := node.Name
-	operator := node.Children[0].Name
-	rightExpr := b.generateExpression(node.Children[1])
-
-	alloca, ok := b.locals[varName]
-
-	if !ok {
-		panic(fmt.Sprintf("Undefined variable: %s", varName))
-	}
-
-	// If it's a IntType and not a PointerType, handle differently
-	if _, isParam := alloca.(*ir.Param); isParam {
-		alloca = b.block.NewAlloca(alloca.Type())
-		b.block.NewStore(b.locals[varName], alloca)
-	}
-
-	loadInst := b.block.NewLoad(alloca.Type().(*types.PointerType).ElemType, alloca)
-
-	var result value.Value
-	switch operator {
-	case "=":
-		result = rightExpr
-	case "+=":
-		result = b.block.NewAdd(loadInst, rightExpr)
-	case "-=":
-		result = b.block.NewSub(loadInst, rightExpr)
-	case "*=":
-		result = b.block.NewMul(loadInst, rightExpr)
-	case "/=":
-		result = b.block.NewSDiv(loadInst, rightExpr)
-	case "%=":
-		result = b.block.NewSRem(loadInst, rightExpr)
-	default:
-		panic(fmt.Sprintf("Unsupported assignment operator: %s", operator))
-	}
-
-	b.block.NewStore(result, alloca)
-	b.locals[varName] = alloca
+	b.currentFunction = nil
 }
 
 func (b *Builder) generateExpression(node *ast.ASTNode) value.Value {
@@ -392,27 +165,27 @@ func (b *Builder) generateExpression(node *ast.ASTNode) value.Value {
 }
 
 func (b *Builder) generateLiteral(node *ast.ASTNode) value.Value {
-	val, err := strconv.Atoi(node.Name)
-	if err != nil {
-		panic(fmt.Sprintf("Invalid literal: %s", node.Name))
+	if val, err := strconv.Atoi(node.Name); err == nil {
+		return constant.NewInt(types.I32, int64(val))
 	}
-	return constant.NewInt(types.I32, int64(val))
+
+	panic(fmt.Sprintf("Unsupported literal type: %s", node.Name))
 }
 
 func (b *Builder) generateIdentifier(node *ast.ASTNode) value.Value {
 	if val, ok := b.locals[node.Name]; ok {
 		if _, isParam := val.(*ir.Param); isParam {
-			return val // Return the parameter directly
+			return val
 		}
 
-		return b.block.NewLoad(val.Type().(*types.PointerType).ElemType, val)
+		return b.currentBlock.NewLoad(val.Type().(*types.PointerType).ElemType, val)
 	}
 
 	if val, ok := b.globals[node.Name]; ok {
 		return val
 	}
 
-	panic(fmt.Sprintf("Undefined variable: %s", node.Name))
+	panic(fmt.Sprintf("Unknown identifier: %s", node.Name))
 }
 
 func (b *Builder) generateBinaryExpression(node *ast.ASTNode) value.Value {
@@ -421,49 +194,267 @@ func (b *Builder) generateBinaryExpression(node *ast.ASTNode) value.Value {
 
 	switch node.Name {
 	case "+":
-		return b.block.NewAdd(left, right)
+		return b.currentBlock.NewAdd(left, right)
 	case "-":
-		return b.block.NewSub(left, right)
+		return b.currentBlock.NewSub(left, right)
 	case "*":
-		return b.block.NewMul(left, right)
+		return b.currentBlock.NewMul(left, right)
 	case "/":
-		return b.block.NewSDiv(left, right)
+		return b.currentBlock.NewSDiv(left, right)
 	case "%":
-		return b.block.NewSRem(left, right)
+		return b.currentBlock.NewSRem(left, right)
 	case "==":
-		return b.block.NewICmp(enum.IPredEQ, left, right)
+		return b.currentBlock.NewICmp(enum.IPredEQ, left, right)
 	case "!=":
-		return b.block.NewICmp(enum.IPredNE, left, right)
+		return b.currentBlock.NewICmp(enum.IPredNE, left, right)
 	case "<":
-		return b.block.NewICmp(enum.IPredSLT, left, right)
+		return b.currentBlock.NewICmp(enum.IPredSLT, left, right)
 	case "<=":
-		return b.block.NewICmp(enum.IPredSLE, left, right)
+		return b.currentBlock.NewICmp(enum.IPredSLE, left, right)
 	case ">":
-		return b.block.NewICmp(enum.IPredSGT, left, right)
+		return b.currentBlock.NewICmp(enum.IPredSGT, left, right)
 	case ">=":
-		return b.block.NewICmp(enum.IPredSGE, left, right)
+		return b.currentBlock.NewICmp(enum.IPredSGE, left, right)
 	default:
 		panic(fmt.Sprintf("Unsupported binary operator: %s", node.Name))
 	}
 }
 
-func (b *Builder) generateWhileStatement(node *ast.ASTNode) {
-	conditionBlock := b.function.NewBlock("")
-	loopBlock := b.function.NewBlock("")
-	endBlock := b.function.NewBlock("")
+func (b *Builder) generateFunctionCall(node *ast.ASTNode) value.Value {
+	fnName := node.Name
+	var fn *ir.Func
 
-	b.block.NewBr(conditionBlock)
-
-	b.block = conditionBlock
-	condition := b.generateExpression(node.Children[0])
-	b.block.NewCondBr(condition, loopBlock, endBlock)
-
-	b.generateBlock(loopBlock, node.Children[1])
-	if loopBlock.Term == nil {
-		loopBlock.NewBr(conditionBlock)
+	// Find the function in the module
+	for _, f := range b.module.Funcs {
+		if f.Name() == fnName {
+			fn = f
+			break
+		}
 	}
 
-	b.block = endBlock
+	if fn == nil {
+		if fnName == "printf" {
+			fn = b.module.NewFunc("printf", types.I32, ir.NewParam("format", types.NewPointer(types.I8)))
+			fn.Sig.Variadic = true
+		} else {
+			panic(fmt.Sprintf("Function not found: %s", fnName))
+		}
+	}
+
+	var args []value.Value
+	if fnName == "printf" {
+		formatStr := b.module.NewGlobalDef("", constant.NewCharArray([]byte("%d\n\x00")))
+		args = append(args, formatStr)
+	}
+	for _, arg := range node.Children {
+		args = append(args, b.generateExpression(arg))
+	}
+
+	return b.currentBlock.NewCall(fn, args...)
+}
+
+func (b *Builder) generateBlock(block *ir.Block, node *ast.ASTNode) {
+	b.currentBlock = block
+
+	for _, child := range node.Children {
+		switch child.Type {
+		case ast.ReturnStatement:
+			b.generateReturn(child)
+		case ast.VariableDeclaration:
+			b.generateVariableDeclaration(child)
+		case ast.FunctionCall:
+			b.generateFunctionCall(child)
+		case ast.Statement:
+			switch child.Name {
+			case "if":
+				b.generateConditional(child)
+			case "continue":
+				b.generateBreakContinue(true)
+			case "break":
+				b.generateBreakContinue(false)
+			default:
+				panic(fmt.Sprintf("Unsupported statement type: %s", child.Name))
+			}
+		case ast.Assignment:
+			b.generateAssignment(child)
+		case ast.WhileStatement:
+			b.generateWhileStatement(child)
+		default:
+			panic(fmt.Sprintf("Unsupported block type: %s", ast.ASTNodeTypeNames[child.Type]))
+		}
+	}
+}
+
+func (b *Builder) generateReturn(node *ast.ASTNode) {
+	if len(node.Children) == 0 {
+		b.currentBlock.NewRet(nil)
+		return
+	}
+
+	b.currentBlock.NewRet(b.generateExpression(node.Children[0]))
+}
+
+func (b *Builder) generateVariableDeclaration(node *ast.ASTNode) {
+	name := node.Name
+	varType := getTypeFromName(node.Children[0].Name)
+
+	alloca := b.currentBlock.NewAlloca(varType)
+	alloca.SetName(name)
+
+	b.locals[name] = alloca
+
+	if len(node.Children) > 1 {
+		b.currentBlock.NewStore(b.generateExpression(node.Children[1]), alloca)
+	}
+}
+
+func (b *Builder) generateAssignment(node *ast.ASTNode) {
+	name := node.Name
+	operator := node.Children[0].Name
+	rightExpr := b.generateExpression(node.Children[1])
+
+	alloca, ok := b.locals[name]
+
+	if !ok {
+		panic(fmt.Sprintf("Unknown identifier: %s", name))
+	}
+
+	if _, isParam := alloca.(*ir.Param); isParam {
+		alloca = b.currentBlock.NewAlloca(alloca.Type())
+		b.currentBlock.NewStore(b.locals[name], alloca)
+	}
+
+	loadInst := b.currentBlock.NewLoad(alloca.Type().(*types.PointerType).ElemType, alloca)
+
+	var result value.Value
+
+	switch operator {
+	case "=":
+		result = rightExpr
+	case "+=":
+		result = b.currentBlock.NewAdd(loadInst, rightExpr)
+	case "-=":
+		result = b.currentBlock.NewSub(loadInst, rightExpr)
+	case "*=":
+		result = b.currentBlock.NewMul(loadInst, rightExpr)
+	case "/=":
+		result = b.currentBlock.NewSDiv(loadInst, rightExpr)
+	case "%=":
+		result = b.currentBlock.NewSRem(loadInst, rightExpr)
+	default:
+		panic(fmt.Sprintf("Unsupported assignment operator: %s", operator))
+	}
+
+	b.currentBlock.NewStore(result, alloca)
+	b.locals[name] = alloca
+}
+
+func (b *Builder) generateConditional(node *ast.ASTNode) {
+	// Generate the condition expression
+	condition := b.generateExpression(node.Children[0])
+
+	// Create basic blocks
+	body := b.currentFunction.NewBlock(fmt.Sprintf("if.body.%d", len(b.blocks)))
+	end := b.currentFunction.NewBlock(fmt.Sprintf("if.end.%d", len(b.blocks)))
+	b.blocks = append(b.blocks, body, end)
+
+	var elseBlock *ir.Block
+
+	// Handle "else if" or "else"
+	if len(node.Children) > 2 {
+		if node.Children[2].Type == ast.Statement {
+			// "else if" block
+			elseBlock = b.currentFunction.NewBlock(fmt.Sprintf("if.elseif.%d", len(b.blocks)))
+			b.blocks = append(b.blocks, elseBlock)
+			b.currentBlock.NewCondBr(condition, body, elseBlock)
+		} else {
+			// "else" block
+			elseBlock = b.currentFunction.NewBlock(fmt.Sprintf("if.else.%d", len(b.blocks)))
+			b.blocks = append(b.blocks, elseBlock)
+			b.currentBlock.NewCondBr(condition, body, elseBlock)
+		}
+	} else {
+		// No "else" or "else if"
+		b.currentBlock.NewCondBr(condition, body, end)
+	}
+
+	// Generate "if" body
+	b.generateBlock(body, node.Children[1])
+	if b.currentBlock.Term == nil {
+		b.currentBlock.NewBr(end)
+	}
+
+	// Generate "else if" or "else" block
+	if elseBlock != nil {
+		b.currentBlock = elseBlock
+		if node.Children[2].Type == ast.Statement {
+			// Recursively handle "else if"
+			b.generateConditional(node.Children[2])
+		} else {
+			// Handle "else"
+			b.generateBlock(elseBlock, node.Children[2])
+			if b.currentBlock.Term == nil {
+				b.currentBlock.NewBr(end)
+			}
+		}
+	}
+
+	// Ensure "end" block has a terminator
+	if b.currentBlock.Term == nil {
+		b.currentBlock.NewBr(end)
+	}
+	b.currentBlock = end
+}
+
+func (b *Builder) generateWhileStatement(node *ast.ASTNode) {
+	condition := b.currentFunction.NewBlock(fmt.Sprintf("while.cond.%d", len(b.blocks)))
+	body := b.currentFunction.NewBlock(fmt.Sprintf("while.body.%d", len(b.blocks)))
+	end := b.currentFunction.NewBlock(fmt.Sprintf("while.end.%d", len(b.blocks)))
+
+	b.blocks = append(b.blocks, condition, body, end)
+
+	b.currentBlock.NewBr(condition)
+
+	// Add loop trace
+	b.loops = append(b.loops, &LoopTrace{
+		condition: condition,
+		body:      body,
+		end:       end,
+	})
+
+	// Generate condition block
+	b.currentBlock = condition
+	conditionExpr := b.generateExpression(node.Children[0])
+	b.currentBlock.NewCondBr(conditionExpr, body, end)
+
+	// Generate body block
+	b.generateBlock(body, node.Children[1])
+	if b.currentBlock.Term == nil {
+		b.currentBlock.NewBr(condition)
+	}
+
+	// Ensure "end" block has a terminator
+	if b.currentBlock.Term == nil {
+		b.currentBlock.NewBr(end)
+	}
+
+	b.currentBlock = end
+}
+
+func (b *Builder) generateBreakContinue(isContinue bool) {
+	if len(b.loops) == 0 {
+		panic("Break/continue statement outside of loop")
+	}
+
+	var target *ir.Block
+
+	if isContinue {
+		target = b.loops[len(b.loops)-1].condition
+	} else {
+		target = b.loops[len(b.loops)-1].end
+	}
+
+	b.currentBlock.NewBr(target)
 }
 
 func getTypeFromName(name string) types.Type {
@@ -474,35 +465,5 @@ func getTypeFromName(name string) types.Type {
 		return types.Void
 	default:
 		panic(fmt.Sprintf("Unsupported type: %s", name))
-	}
-}
-
-func (b *Builder) generateBreakContinue(node *ast.ASTNode, isContinue bool) {
-	if len(node.Children) > 0 {
-		panic("Break/continue statements do not take any arguments")
-	}
-
-	var targetBlock *ir.Block
-	for i := len(b.function.Blocks) - 1; i >= 0; i-- {
-		block := b.function.Blocks[i]
-		if block == b.block {
-			if isContinue {
-				targetBlock = block
-			} else {
-				targetBlock = b.function.NewBlock("")
-			}
-			break
-		}
-	}
-
-	if targetBlock == nil {
-		panic("Break/continue statement outside of a loop")
-	}
-
-	if isContinue {
-		b.block.NewBr(targetBlock)
-	} else {
-		b.block.NewBr(targetBlock)
-		b.block = targetBlock
 	}
 }
